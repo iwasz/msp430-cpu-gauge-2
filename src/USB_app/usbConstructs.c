@@ -114,7 +114,7 @@ uint8_t hidSendDataWaitTilDone (uint8_t* dataBuf,
 
     /* If execution reaches this point, then the operation successfully started.  Now wait til it's finished. */
     while (1){
-        uint8_t ret = USBHID_intfStatus(intfNum,&bytesSent,&bytesReceived);
+        uint8_t ret = vendorIntfStatus(intfNum,&bytesSent,&bytesReceived);
         if (ret & kUSBHID_busNotAvailable){                 /* This may happen at any time */
             return ( 2) ;
         }
@@ -145,7 +145,7 @@ uint8_t hidSendDataInBackground (uint8_t* dataBuf,
     uint32_t sendCounter = 0;
     uint16_t bytesSent, bytesReceived;
 
-    while (USBHID_intfStatus(intfNum,&bytesSent,
+    while (vendorIntfStatus(intfNum,&bytesSent,
                &bytesReceived) & kUSBHID_waitingForSend){
         if (ulTimeout && ((sendCounter++) > ulTimeout)){    /* A send operation is underway; incr counter & try again */
             return ( 1) ;                                   /* Timed out */
@@ -175,14 +175,14 @@ uint16_t hidReceiveDataInBuffer (uint8_t* dataBuf, uint16_t size, uint8_t intfNu
 	uint16_t rxCount = 0;
     uint8_t* currentPos = dataBuf;
 
-    while (bytesInBuf = USBHID_bytesInUSBBuffer(intfNum)){
+    while (bytesInBuf = vendorBytesInUSBBuffer(intfNum)){
         if ((uint16_t)(currentPos - dataBuf + bytesInBuf) <= size){
             rxCount = bytesInBuf;
-			USBHID_receiveData(currentPos,rxCount,intfNum);
+			vendorReceiveData(currentPos,rxCount,intfNum);
         	currentPos += rxCount;
         } else {
             rxCount = size - (currentPos - dataBuf);
-			USBHID_receiveData(currentPos,rxCount,intfNum);
+			vendorReceiveData(currentPos,rxCount,intfNum);
         	currentPos += rxCount;
 			return (currentPos - dataBuf);
         }
